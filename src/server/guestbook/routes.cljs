@@ -13,37 +13,38 @@
 (defn home [req res raise]
   (let [af-token af/*anti-forgery-token*]
     (db/messages
-     (if err
-       (raise err)
-       (->
-        [:html
-         [:body
-          [:h2 "Message"]
-          [:ul
-           (for [{:keys [name message time]} (js->clj result :keywordize-keys true)]
-             [:li name " says " message " at " time])]
-          [:hr]
-          [:h2 "leave a message"]
-          [:form {:method "POST" :action "/message"}
-           [:input
-            {:type :text
-             :name "name"
-             :placeholder "name"}]
-           [:input
-            {:type "hidden"
-             :name "__anti-forgery-token"
-             :value af-token}]
-           [:input
-            {:type :text
-             :name "message"
-             :placeholder "message"}]
-           [:input
-            {:type :submit
-             :value "add message"}]]]]
-        (html)
-        (r/ok)
-        (r/content-type "text/html")
-        (res))))))
+     (fn [err result]
+       (if err
+         (raise err)
+         (->
+          [:html
+           [:body
+            [:h2 "Messages"]
+            [:ul
+             (for [{:keys [name message time]} (js->clj result :keywordize-keys true)]
+               [:li name " says " message " at " time])]
+            [:hr]
+            [:h2 "leave a message"]
+            [:form {:method "POST" :action "/message"}
+             [:input
+              {:type :text
+               :name "name"
+               :placeholder "name"}]
+             [:input
+              {:type "hidden"
+               :name "__anti-forgery-token"
+               :value af-token}]
+             [:input
+              {:type :text
+               :name "message"
+               :placeholder "message"}]
+             [:input
+              {:type :submit
+               :value "add message"}]]]]
+          (html)
+          (r/ok)
+          (r/content-type "text/html")
+          (res)))))))
 
 (defn message [req res raise]
   (db/add-message (select-keys (:params req) [:name :message]))
